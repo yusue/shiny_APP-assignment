@@ -1,0 +1,73 @@
+Developing data products
+========================================================
+author: Yu SuE
+date: 19th Feb 2020
+autosize: true
+
+Reproducible Pitch
+========================================================
+This is the Reproducible Pitch presentation for week 4 assignment in the coursera course of Developing data products. As part of this, I have created a shiny app and deployed it on the shiny server.
+
+
+
+Code for data pre-processing
+========================================================
+
+```{r}
+data("mtcars")
+mtcars$vs <- factor(mtcars$vs, labels = c("V-shape", "straight"))
+mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+```
+
+Code for UI
+========================================================
+
+```{r}
+library(shiny)
+ui <- fluidPage(
+    titlePanel("Miles Per Gallon"),
+    sidebarLayout(
+        sidebarPanel(
+            selectInput("variable", "Variable:",
+                        c("Cylinders" = "cyl",
+                          "Engine" = "vs",
+                          "Transmission" = "am",
+                          "Gears" = "gear")),
+            checkboxInput("outliers", "Show outliers", TRUE)
+
+        ),
+
+        mainPanel(
+
+            h3(textOutput("caption")),
+
+            plotOutput("mpgPlot")
+
+        )
+    )
+)
+```
+
+Code for server
+========================================================
+
+```{r}
+library(shiny)
+server <- function(input, output) {
+    formulaText <- reactive({
+        paste("mpg ~", input$variable)
+    })
+
+    output$caption <- renderText({
+        formulaText()
+    })
+
+    output$mpgPlot <- renderPlot({
+        boxplot(as.formula(formulaText()),
+                data = mtcars,
+                outline = input$outliers,
+                col = "red", pch = 19)
+    })
+
+}
+```
